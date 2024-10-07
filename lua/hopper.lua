@@ -18,11 +18,8 @@ end
 local function highlight()
 	local current_buf = vim.api.nvim_get_current_buf()
 	local current_line = vim.api.nvim_win_get_cursor(0)[1]
-	print('current line = ' .. current_line)
 	local first_line = vim.fn.line('w0')
-	print('first line = ' .. current_line)
 	local last_line = vim.fn.line('w$')
-	print('last line = ' .. last_line)
 	local hl_group = "Search"
 
 	last_line = tonumber(last_line)
@@ -30,7 +27,6 @@ local function highlight()
 	current_line = tonumber(current_line)
 
 	targetLine = getTargetHighlight(current_line, first_line, last_line)
-	print('target = ' .. targetLine)
 
 	vim.api.nvim_buf_add_highlight(current_buf, -1, hl_group, targetLine-1, 0, -1)
 end
