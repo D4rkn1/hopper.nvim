@@ -34,7 +34,6 @@ end
 
 local function onLineChanged()
 	local current_line = vim.api.nvim_win_get_cursor(0)[1]
-	print(current_line)
 	if current_line == targetLine then
 		vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
 		highlight()
