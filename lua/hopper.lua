@@ -1,8 +1,14 @@
 vim.api.nvim_create_augroup('Hopper', { clear = true })
 
 local targetLine = 0
+local prevLine
 local commandId
 local started = false
+local CenterWindow = false
+
+local function setup(opts)
+	CenterWindow = opts.CenterWindow
+end
 
 local function getTargetHighlight(current_line, first_line, last_line)
 	math.randomseed(os.time())
@@ -38,11 +44,17 @@ local function onLineChanged()
 	if current_line == targetLine then
 		vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
 		highlight()
+		prevLine = current_line
+	else
+		vim.api.nvim_win_set_cursor(0, { prevLine, 0 })
+		if CenterWindow then vim.cmd("normal! zz") end
+		vim.loop.sleep(500)
 	end
 end
 
 
 local function start()
+	prevLine = vim.api.nvim_win_get_cursor(0)[1]
 	commandId = vim.api.nvim_create_autocmd('CursorMoved', {
 		group = 'Hopper',
 		callback = function()
@@ -68,4 +80,4 @@ local function toggle()
 	started = not started
 end
 
-return { toggle = toggle }
+return { toggle = toggle, setup = setup }
