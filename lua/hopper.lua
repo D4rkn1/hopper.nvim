@@ -80,4 +80,13 @@ local function toggle()
 	started = not started
 end
 
+vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+	callback = function()
+		if started then
+			stop()
+			started = false
+		end
+	end
+})
+
 return { toggle = toggle, setup = setup }
