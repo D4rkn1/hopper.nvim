@@ -45,7 +45,11 @@ end
 local function start()
 	commandId = vim.api.nvim_create_autocmd('CursorMoved', {
 		group = 'Hopper',
-		callback = onLineChanged,
+		callback = function()
+			vim.schedule(function()
+				onLineChanged()
+			end)
+		end,
 	})
 	highlight()
 end
