@@ -2,6 +2,7 @@ vim.api.nvim_create_augroup('Hopper', { clear = true })
 
 local targetLine = 0
 local commandId
+local started = false
 
 local function getTargetHighlight(current_line, first_line, last_line)
 	math.randomseed(os.time())
@@ -54,4 +55,13 @@ local function stop()
 	vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
 end
 
-return { start = start, stop = stop }
+local function toggle()
+	if started then
+		stop()
+	else
+		start()
+	end
+	started = not started
+end
+
+return { toggle = toggle }
