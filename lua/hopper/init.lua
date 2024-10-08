@@ -1,24 +1,25 @@
 vim.api.nvim_create_augroup('Hopper', { clear = true })
 
-local targetLine = 0
-local prevLine
-local commandId
-local started = false
-local CenterWindow = false
+local Target_line = 0
+local Prev_line
+local Command_id
+local Started = false
+local Center_window = false
+local Delay = 500
 
-local function setup(opts)
-	CenterWindow = opts.CenterWindow
+local M = {}
+
+function M.setup(opts)
+	if opts.center_window then Center_window = opts.center_window end
+	if opts.delay then Delay = opts.delay end
 end
 
 local function getTargetHighlight(current_line, first_line, last_line)
 	math.randomseed(os.time())
-
 	local target = math.random(first_line, last_line)
-
 	while target == current_line do
 		target = math.random(first_line, last_line)
 	end
-
 	return target
 end
 
@@ -32,34 +33,31 @@ local function highlight()
 	last_line = tonumber(last_line)
 	first_line = tonumber(first_line)
 	current_line = tonumber(current_line)
+	Target_line = getTargetHighlight(current_line, first_line, last_line)
 
-	targetLine = getTargetHighlight(current_line, first_line, last_line)
-
-	vim.api.nvim_buf_add_highlight(current_buf, -1, hl_group, targetLine - 1, 0, -1)
+	vim.api.nvim_buf_add_highlight(current_buf, -1, hl_group, Target_line - 1, 0, -1)
 end
 
-
-local function onLineChanged()
+local function on_line_changed()
 	local current_line = vim.api.nvim_win_get_cursor(0)[1]
-	if current_line == targetLine then
+	if current_line == Target_line then
 		vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
 		highlight()
-		prevLine = current_line
+		Prev_line = current_line
 	else
-		vim.api.nvim_win_set_cursor(0, { prevLine, 0 })
-		if CenterWindow then vim.cmd("normal! zz") end
-		vim.loop.sleep(500)
+		vim.api.nvim_win_set_cursor(0, { Prev_line, 0 })
+		if Center_window then vim.cmd("normal! zz") end
+		vim.loop.sleep(Delay)
 	end
 end
 
-
 local function start()
-	prevLine = vim.api.nvim_win_get_cursor(0)[1]
-	commandId = vim.api.nvim_create_autocmd('CursorMoved', {
+	Prev_line = vim.api.nvim_win_get_cursor(0)[1]
+	Command_id = vim.api.nvim_create_autocmd('CursorMoved', {
 		group = 'Hopper',
 		callback = function()
 			vim.schedule(function()
-				onLineChanged()
+				on_line_changed()
 			end)
 		end,
 	})
@@ -67,26 +65,26 @@ local function start()
 end
 
 local function stop()
-	vim.api.nvim_del_autocmd(commandId)
+	vim.api.nvim_del_autocmd(Command_id)
 	vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
 end
 
-local function toggle()
-	if started then
+function M.toggle()
+	if Started then
 		stop()
 	else
 		start()
 	end
-	started = not started
+	Started = not Started
 end
 
 vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
 	callback = function()
-		if started then
+		if Started then
 			stop()
-			started = false
+			Started = false
 		end
 	end
 })
 
-return { toggle = toggle, setup = setup }
+return M
