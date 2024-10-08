@@ -28,7 +28,7 @@ local function highlight()
 
 	targetLine = getTargetHighlight(current_line, first_line, last_line)
 
-	vim.api.nvim_buf_add_highlight(current_buf, -1, hl_group, targetLine-1, 0, -1)
+	vim.api.nvim_buf_add_highlight(current_buf, -1, hl_group, targetLine - 1, 0, -1)
 end
 
 
@@ -46,10 +46,12 @@ local function start()
 		group = 'Hopper',
 		callback = onLineChanged,
 	})
+	highlight()
 end
 
 local function stop()
 	vim.api.nvim_del_autocmd(commandId)
+	vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
 end
 
-return { highlight = highlight, start = start, stop = stop }
+return { start = start, stop = stop }
