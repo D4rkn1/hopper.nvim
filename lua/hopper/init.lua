@@ -1,5 +1,9 @@
 vim.api.nvim_create_augroup('Hopper', { clear = true })
 
+local ns_id = vim.api.nvim_create_namespace('Hopper')
+local hl_group = "HopperHL"
+vim.api.nvim_set_hl(ns_id, hl_group, { bg = "#003038" })
+
 local Target_line = 0
 local Prev_line
 local Command_id
@@ -24,24 +28,27 @@ local function getTargetHighlight(current_line, first_line, last_line)
 end
 
 local function highlight()
-    local current_buf = vim.api.nvim_get_current_buf()
+    vim.api.nvim_win_set_hl_ns(0, ns_id)
+
     local current_line = vim.api.nvim_win_get_cursor(0)[1]
     local first_line = vim.fn.line('w0')
     local last_line = vim.fn.line('w$')
-    local hl_group = "Search"
 
     last_line = tonumber(last_line)
     first_line = tonumber(first_line)
     current_line = tonumber(current_line)
+
     Target_line = getTargetHighlight(current_line, first_line, last_line)
 
-    vim.api.nvim_buf_add_highlight(current_buf, -1, hl_group, Target_line - 1, 0, -1)
+    vim.api.nvim_buf_set_extmark(0, ns_id, Target_line - 1, 0, {
+        line_hl_group = hl_group,
+    })
 end
 
 local function on_line_changed()
     local current_line = vim.api.nvim_win_get_cursor(0)[1]
     if current_line == Target_line then
-        vim.api.nvim_buf_clear_highlight(0, -1, 1, -1)
+        vim.api.nvim_buf_clear_highlight(0, ns_id, 1, -1)
         highlight()
         Prev_line = current_line
     else
